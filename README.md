@@ -23,8 +23,7 @@ usage: main.py [-h] [--start START] [--end END] [--out OUT] scada_file
 E.G:
 
 ```shell
-$ python main.py --end 2013-01-02 data/scad
-a_R80711.cs
+$ python main.py --end 2013-01-02 data/scada_R80711.cs
 ```
 
 This will generate an image per SCADA record. You can assemble them in a video with `ffmpeg`:
