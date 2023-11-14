@@ -2,3 +2,4 @@ pygfx
 glfw
 imageio
 arrow
+pyside6
