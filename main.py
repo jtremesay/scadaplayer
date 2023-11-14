@@ -77,13 +77,12 @@ class Compass(gfx.WorldObject):
         )
 
         # labels
-        radius = 0.48
         for label, theta in (("E", 0), ("N", pi / 2), ("W", pi), ("S", -pi / 2)):
             text = gfx.Text(
                 gfx.TextGeometry(label, font_size=0.03),
                 gfx.TextMaterial(color="#fff"),
             )
-            text.local.position = (radius * cos(theta), radius * sin(theta), 0)
+            text.local.position = (0.48 * cos(theta), 0.48 * sin(theta), 0)
             self.add(text)
 
         # Wind turbine
@@ -229,7 +228,7 @@ def main(args: list[str] | None = None):
 
     # Clean the output dir
     args.out.mkdir(parents=True, exist_ok=True)
-    for e in args.out.glob("bla_*.png"):
+    for e in args.out.glob("scadaplayer_*.png"):
         e.unlink()
 
     # Create the render stuff
