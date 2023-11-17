@@ -1,0 +1,187 @@
+class Size {
+    width: number
+    height: number
+
+    constructor(width: number, height: number) {
+        this.width = width
+        this.height = height
+    }
+}
+
+class Position {
+    x: number
+    y: number
+
+    constructor(x: number, y: number) {
+        this.x = x
+        this.y = y
+    }
+}
+
+class Widget {
+    static UNIT_WIDTH: number = 160
+    static UNIT_HEIGHT: number = 135
+
+
+    label: string
+    position: Position
+    size: Size
+    constructor(label: string, position: Position, size: Size) {
+        this.label = label
+        this.position = position
+        this.size = size
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        ctx.save()
+        ctx.translate(this.position.x * , this.position.y)
+        ctx.scale(this.size.width, this.size.height)
+
+        ctx.beginPath()
+        ctx.fillStyle = "black"
+        ctx.fillRect(0, 0, 1, 1)
+
+        ctx.beginPath()
+        ctx.lineWidth = 0.01
+        ctx.strokeStyle = "red"
+        ctx.moveTo(0, 0)
+        ctx.lineTo(1, 0)
+        ctx.lineTo(1, 1)
+        ctx.lineTo(0, 1)
+        ctx.lineTo(0, 0)
+        ctx.stroke()
+
+        ctx.restore()
+    }
+}
+
+class CompassWidget extends Widget {
+    constructor(position: Position) {
+        super("Compass", position, new Size(4, 4))
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        super.draw(ctx)
+        ctx.save()
+        ctx.translate(this.position.x, this.position.y)
+        ctx.scale(this.size.width, this.size.height)
+
+        ctx.translate(0.5, 0.5)
+        ctx.beginPath()
+        ctx.lineWidth = 0.005
+        ctx.strokeStyle = "white"
+        for (let i = 0; i < 360; i += 5) {
+            ctx.moveTo(0.35 * Math.cos(i * Math.PI / 180), 0.35 * Math.sin(i * Math.PI / 180))
+            ctx.lineTo(0.4 * Math.cos(i * Math.PI / 180), 0.4 * Math.sin(i * Math.PI / 180))
+        }
+        ctx.stroke()
+
+        ctx.restore()
+    }
+}
+
+class GaugeWidget extends Widget {
+    min: number
+    max: number
+    constructor(label: string, min: number, max: number, position: Position, size: Size) {
+        super(label, position, size)
+        this.min = min
+        this.max = max
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        super.draw(ctx)
+        ctx.save()
+        ctx.translate(this.position.x, this.position.y)
+        ctx.scale(this.size.width, this.size.height)
+
+        ctx.translate(0.9, 0.9)
+        ctx.beginPath()
+        ctx.lineWidth = 0.005
+        ctx.strokeStyle = "white"
+        let in_radius = 0.7
+        let out_radius = 0.8
+        for (let i = this.min; i <= this.max; i += 5) {
+            ctx.moveTo(in_radius * Math.cos(Math.PI + i * Math.PI / 180), in_radius * Math.sin(Math.PI + i * Math.PI / 180))
+            ctx.lineTo(out_radius * Math.cos(Math.PI + i * Math.PI / 180), out_radius * Math.sin(Math.PI + i * Math.PI / 180))
+        }
+        ctx.stroke()
+
+        ctx.restore()
+    }
+}
+
+class PitchAngleGaugeWidget extends GaugeWidget {
+    constructor(position: Position) {
+        super("Pitch Angle", 0, 90, position, new Size(2, 2))
+    }
+}
+
+class UI {
+    canvas: HTMLCanvasElement
+    ctx: CanvasRenderingContext2D
+    widgets: Widget[]
+
+    constructor() {
+        this.canvas = document.getElementById("canvas")! as HTMLCanvasElement
+        this.canvas.width /= 2
+        this.canvas.height /= 2
+        this.ctx = this.canvas.getContext("2d")! as CanvasRenderingContext2D
+        this.widgets = [
+            new PitchAngleGaugeWidget(new Position(0, 0)),
+            new PitchAngleGaugeWidget(new Position(0, 2)),
+            new PitchAngleGaugeWidget(new Position(0, 4)),
+            new PitchAngleGaugeWidget(new Position(0, 6)),
+            new CompassWidget(new Position(2, 0))
+        ]
+    }
+
+    draw() {
+        this.ctx.save()
+        this.ctx.scale(this.canvas.width / 1920, this.canvas.height / 1080) // Resize to 1920x1080
+
+        // Clear the screen
+        this.ctx.fillStyle = "magenta"
+        this.ctx.fillRect(0, 0, 1920, 1080)
+
+        // Build debug grid
+        if (true) {
+            this.ctx.beginPath()
+            this.ctx.lineWidth = 1
+            this.ctx.strokeStyle = "white"
+            for (let x = 0; x < 12; ++x) {
+                this.ctx.moveTo(x, 0)
+                this.ctx.lineTo(x, 8)
+            }
+            for (let y = 0; y < 8; ++y) {
+                this.ctx.moveTo(0, y)
+                this.ctx.lineTo(12, y)
+            }
+            this.ctx.stroke()
+        }
+
+        // draw the widgets
+        for (let widget of this.widgets) {
+            widget.draw(this.ctx)
+        }
+
+        this.ctx.beginPath()
+        this.ctx.lineWidth = 1
+        this.ctx.strokeStyle = "red"
+        this.ctx.moveTo(10, 10)
+        this.ctx.lineTo(1910, 1070)
+        this.ctx.moveTo(10, 1070)
+        this.ctx.lineTo(1910, 10)
+        this.ctx.stroke()
+
+        this.ctx.restore()
+        this.request_draw()
+    }
+
+    request_draw() {
+        window.requestAnimationFrame(this.draw.bind(this))
+    }
+}
+
+const ui = new UI()
+ui.request_draw()

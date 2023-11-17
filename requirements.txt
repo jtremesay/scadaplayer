@@ -1,4 +1,0 @@
-pygfx
-glfw
-imageio
-arrow
