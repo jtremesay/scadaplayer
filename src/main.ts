@@ -1,3 +1,47 @@
+interface ScadaRecord {
+  timestamp: Date
+  wind_speed: number
+  wind_direction: number
+  air_temperature: number
+  nacelle_direction: number
+  active_power: number
+  pitch_angle: number
+}
+
+
+interface Metadata {
+  farm: string | null
+  turbine: string | null
+  turbine_model: string | null
+  nominal_power: number | null
+}
+
+function parse_scada(scada: string): ScadaRecord[] {
+  let lines = scada.split("\n")
+
+  // Parse headers
+  let lut: Record<string, number> = {}
+  lines[0].split(",").forEach((value, i) => {
+    lut[value] = i
+  })
+  lines.splice(0, 1)
+
+  return lines.map((value) => value.trim()).filter((value) => value.length).map((line) => {
+    let values = line.split(",")
+
+    return {
+      timestamp: new Date(values[lut["timestamp"]]),
+      wind_speed: Number.parseFloat(values[lut["wind_speed"]]),
+      wind_direction: Number.parseFloat(values[lut["wind_direction"]]),
+      air_temperature: Number.parseFloat(values[lut["air_temperature"]]),
+      nacelle_direction: Number.parseFloat(values[lut["nacelle_direction"]]),
+      active_power: Number.parseFloat(values[lut["active_power"]]),
+      pitch_angle: Number.parseFloat(values[lut["pitch_angle"]]),
+    }
+  })
+}
+
+
 class Size {
   width: number
   height: number
@@ -33,6 +77,8 @@ class Widget {
   constructor(rect: Rect) {
     this.rect = rect
   }
+
+  update(_metadata: Metadata, _records: ScadaRecord[], _i: number) { }
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.save()
@@ -106,6 +152,7 @@ class Gauge extends DashboardItem {
   theta: number
   phase: number
   unit: string
+  precision: number
 
   constructor(label: string, min: number, max: number, grid_rect: Rect) {
     super(label, grid_rect)
@@ -117,6 +164,7 @@ class Gauge extends DashboardItem {
     this.theta = 3 * Math.PI / 2
     this.phase = (2 * Math.PI - this.theta) / 2 + Math.PI / 2
     this.unit = ""
+    this.precision = 0
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -188,7 +236,7 @@ class Gauge extends DashboardItem {
     ctx.font = "bold 12px monospace";
     ctx.textAlign = "center"
     ctx.fillStyle = "white"
-    ctx.fillText(`${this.value}${this.unit}`, this.rect.size.width / 2, size.height - 15, this.rect.size.width)
+    ctx.fillText(`${this.value.toFixed(this.precision)}${this.unit}`, this.rect.size.width / 2, size.height - 15, this.rect.size.width)
 
     ctx.restore()
   }
@@ -198,7 +246,10 @@ class AirTemperatureGauge extends Gauge {
   constructor(grid_rect: Rect) {
     super("Air Temperature", -20, 40, grid_rect)
     this.unit = "°C"
-    this.value = 20
+  }
+
+  update(_metadata: Metadata, records: ScadaRecord[], i: number) {
+    this.value = records[i].air_temperature
   }
 }
 
@@ -206,7 +257,10 @@ class PitchAngleGauge extends Gauge {
   constructor(grid_rect: Rect) {
     super("Pitch angle", 0, 90, grid_rect)
     this.unit = "°"
-    this.value = 3
+  }
+
+  update(_metadata: Metadata, records: ScadaRecord[], i: number) {
+    this.value = records[i].pitch_angle
   }
 }
 
@@ -216,7 +270,10 @@ class ActivePowerGauge extends Gauge {
     this.unit = "kW"
     this.short_tick_step = 100
     this.long_tick_step = 500
-    this.value = 1533
+  }
+
+  update(_metadata: Metadata, records: ScadaRecord[], i: number) {
+    this.value = records[i].active_power
   }
 }
 
@@ -224,7 +281,10 @@ class WindSpeedGauge extends Gauge {
   constructor(grid_rect: Rect) {
     super("Wnd speed", 0, 30, grid_rect)
     this.unit = "ms⁻¹"
-    this.value = 16.3
+  }
+
+  update(_metadata: Metadata, records: ScadaRecord[], i: number) {
+    this.value = records[i].wind_speed
   }
 }
 
@@ -234,8 +294,14 @@ class Compass extends DashboardItem {
 
   constructor(grid_rect: Rect) {
     super("Compass", grid_rect)
-    this.wind_direction = 10
-    this.nacelle_direction = 350
+    this.wind_direction = 0
+    this.nacelle_direction = 0
+  }
+
+  update(_metadata: Metadata, records: ScadaRecord[], i: number) {
+    let record = records[i]
+    this.nacelle_direction = record.nacelle_direction
+    this.wind_direction = record.wind_direction
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -341,8 +407,8 @@ class Compass extends DashboardItem {
 
     ctx.fillStyle = "white"
     ctx.font = "bold 20px monospace"
-    ctx.fillText(`${this.nacelle_direction}°`, center.x, center.y - 20)
-    ctx.fillText(`${this.wind_direction}°`, center.x, center.y + 80)
+    ctx.fillText(`${this.nacelle_direction.toFixed(1)}°`, center.x, center.y - 20)
+    ctx.fillText(`${this.wind_direction.toFixed(1)}°`, center.x, center.y + 80)
 
     ctx.restore()
   }
@@ -365,16 +431,16 @@ class BoxInfo extends DashboardItem {
     super.draw(ctx)
 
     ctx.save()
-    ctx.translate(this.rect.position.x, this.rect.position.y + 50)
+    ctx.translate(this.rect.position.x, this.rect.position.y + 40)
 
 
     this.entries.forEach((entry, i) => {
-      ctx.font = "16px monospace"
+      ctx.font = "12px monospace"
       ctx.textAlign = "left"
       ctx.fillStyle = "white"
-      ctx.fillText(entry.label.toUpperCase() + ":", 10, i * 17, this.rect.size.width)
+      ctx.fillText(entry.label.toUpperCase() + ":", 10, i * 15, this.rect.size.width)
       ctx.textAlign = "right"
-      ctx.fillText(entry.value, this.rect.size.width - 10, i * 17, this.rect.size.width)
+      ctx.fillText(entry.value, this.rect.size.width - 10, i * 15, this.rect.size.width)
     })
 
     ctx.restore()
@@ -386,14 +452,13 @@ class MetadataBoxInfo extends BoxInfo {
     super("Metadata", [], grid_rect)
   }
 
-  draw(ctx: CanvasRenderingContext2D): void {
+  update(metadata: Metadata, _records: ScadaRecord[], _i: number) {
     this.entries = [
-      { label: "Farm", value: "NO FARM" },
-      { label: "Turbine", value: "NO TURBINE" },
-      { label: "Turbine model", value: "NO MODEL" },
-      { label: "Nominal power", value: `${Number.NaN} kW` }
+      { label: "Farm", value: metadata.farm ?? "N/A" },
+      { label: "Turbine", value: metadata.turbine ?? "N/A" },
+      { label: "Turbine model", value: metadata.turbine_model ?? "N/A" },
+      { label: "Nominal power", value: `${metadata.nominal_power} kW` ?? "N/A" }
     ]
-    super.draw(ctx)
   }
 }
 
@@ -403,34 +468,59 @@ class ScadaBoxInfo extends BoxInfo {
 
   }
 
-  draw(ctx: CanvasRenderingContext2D): void {
+  update(_metadata: Metadata, records: ScadaRecord[], i: number) {
     this.entries = [
-      { label: "Start", value: "1970-01-01T00:00:00" },
-      { label: "End", value: "1970-01-01T00:00:00" },
-      { label: "Records count", value: "0" },
-      { label: "Current record", value: "0" },
-      { label: "Timestamp", value: "1970-01-01T00:00:00" },
+      { label: "Start", value: records[0].timestamp.toISOString() },
+      { label: "End", value: records[records.length - 1].timestamp.toISOString() },
+      { label: "Records count", value: records.length.toFixed() },
+      { label: "Current record", value: i.toFixed() },
+      { label: "Timestamp", value: records[i].timestamp.toISOString() },
     ]
-    super.draw(ctx)
   }
 }
 
 class Dashboard extends Widget {
   items: DashboardItem[]
+  metadata_item: MetadataBoxInfo
+  scada_item: ScadaBoxInfo
+  air_temperature_item: AirTemperatureGauge
+  pitch_angle_item: PitchAngleGauge
+  active_power_item: ActivePowerGauge
+  wind_speed_item: WindSpeedGauge
+  compass_item: Compass
 
   constructor() {
     super(new Rect(new Point(0, 0), new Size(1920, 1080)))
-    this.items = [
-      new MetadataBoxInfo(new Rect(new Point(0, 0), new Size(2, 1))),
-      new ScadaBoxInfo(new Rect(new Point(0, 1), new Size(2, 1))),
-      new AirTemperatureGauge(new Rect(new Point(0, 2), new Size(2, 2))),
-      new PitchAngleGauge(new Rect(new Point(0, 4), new Size(2, 2))),
-      new ActivePowerGauge(new Rect(new Point(2, 4), new Size(2, 2))),
-      new WindSpeedGauge(new Rect(new Point(4, 4), new Size(2, 2))),
-      new Compass(
-        new Rect(new Point(2, 0), new Size(4, 4))
-      ),
-    ]
+    this.items = []
+
+    this.metadata_item = new MetadataBoxInfo(new Rect(new Point(0, 0), new Size(2, 1)))
+    this.items.push(this.metadata_item)
+
+    this.scada_item = new ScadaBoxInfo(new Rect(new Point(0, 1), new Size(2, 1)))
+    this.items.push(this.scada_item)
+
+    this.air_temperature_item = new AirTemperatureGauge(new Rect(new Point(0, 2), new Size(2, 2)))
+    this.items.push(this.air_temperature_item)
+
+    this.pitch_angle_item = new PitchAngleGauge(new Rect(new Point(0, 4), new Size(2, 2)))
+    this.items.push(this.pitch_angle_item)
+
+    this.active_power_item = new ActivePowerGauge(new Rect(new Point(2, 4), new Size(2, 2)))
+    this.items.push(this.active_power_item)
+
+    this.wind_speed_item = new WindSpeedGauge(new Rect(new Point(4, 4), new Size(2, 2)))
+    this.items.push(this.wind_speed_item)
+
+    this.compass_item = new Compass(
+      new Rect(new Point(2, 0), new Size(4, 4))
+    )
+    this.items.push(this.compass_item)
+  }
+
+  update(metadata: Metadata, records: ScadaRecord[], i: number) {
+    this.items.forEach((item) => {
+      item.update(metadata, records, i)
+    })
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -464,11 +554,15 @@ class Dashboard extends Widget {
 }
 
 class Engine {
+  metadata: Metadata
+  records: ScadaRecord[]
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   dashboard: Dashboard
 
-  constructor() {
+  constructor(metadata: Metadata, records: ScadaRecord[]) {
+    this.metadata = metadata
+    this.records = records
     this.canvas = document.getElementById("canvas")! as HTMLCanvasElement
     //this.canvas.width /= 2
     //this.canvas.height /= 2
@@ -476,10 +570,13 @@ class Engine {
     this.dashboard = new Dashboard()
   }
 
-  render() {
+  render(time: DOMHighResTimeStamp) {
+    if (this.records.length > 0) {
+      this.dashboard.update(this.metadata, this.records, Math.min(Math.floor(time / 1000), records.length - 1))
+    }
+
     this.ctx.save()
     this.ctx.scale(this.canvas.width / 1920, this.canvas.height / 1080) // Resize to 1920x1080
-
     this.dashboard.draw(this.ctx)
 
     this.ctx.restore()
@@ -491,50 +588,7 @@ class Engine {
   }
 }
 
-interface ScadaRecord {
-  timestamp: Date
-  wind_speed: number
-  wind_direction: number
-  air_temperature: number
-  nacelle_direction: number
-  active_power: number
-  pitch_angle: number
-}
-
-
-interface Metadata {
-  farm: string | null
-  turbine: string | null
-  turbine_model: string | null
-  nominal_power: number | null
-}
-
-function parse_scada(scada: string): ScadaRecord[] {
-  let lines = scada.split("\n")
-
-  // Parse headers
-  let lut: Record<string, number> = {}
-  lines[0].split(",").forEach((value, i) => {
-    lut[value] = i
-  })
-  lines.splice(0, 1)
-
-  return lines.map((line) => {
-    let values = line.split(",")
-    return {
-      timestamp: new Date(values[lut["timestamp"]]),
-      wind_speed: Number.parseFloat(values[lut["wind_speed"]]),
-      wind_direction: Number.parseFloat(values[lut["wind_direction"]]),
-      air_temperature: Number.parseFloat(values[lut["air_temperature"]]),
-      nacelle_direction: Number.parseFloat(values[lut["nacelle_direction"]]),
-      active_power: Number.parseFloat(values[lut["active_power"]]),
-      pitch_angle: Number.parseFloat(values[lut["pitch_angle"]]),
-    }
-  })
-}
-
-
-let records = parse_scada((document.getElementById("scada")! as HTMLTextAreaElement).value)
-
-const ui = new Engine()
+const metadata = JSON.parse((document.getElementById("metadata")! as HTMLTextAreaElement).value)
+const records = parse_scada((document.getElementById("scada")! as HTMLTextAreaElement).value)
+const ui = new Engine(metadata, records)
 ui.request_frame()
