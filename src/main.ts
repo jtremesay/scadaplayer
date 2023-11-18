@@ -473,7 +473,7 @@ class ScadaBoxInfo extends BoxInfo {
       { label: "Start", value: records[0].timestamp.toISOString() },
       { label: "End", value: records[records.length - 1].timestamp.toISOString() },
       { label: "Records count", value: records.length.toFixed() },
-      { label: "Current record", value: i.toFixed() },
+      { label: "Current record", value: (i + 1).toFixed() },
       { label: "Timestamp", value: records[i].timestamp.toISOString() },
     ]
   }
@@ -572,7 +572,7 @@ class Engine {
 
   render(time: DOMHighResTimeStamp) {
     if (this.records.length > 0) {
-      this.dashboard.update(this.metadata, this.records, Math.min(Math.floor(time / 1000), records.length - 1))
+      this.dashboard.update(this.metadata, this.records, Math.floor(time / 1000) % records.length)
     }
 
     this.ctx.save()
