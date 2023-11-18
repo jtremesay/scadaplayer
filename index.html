@@ -9,7 +9,21 @@
 <body>
   <div id="scadaplayer">
     <canvas id="canvas" width="1920" height="1080"></canvas>
-    <textarea id="scada" cols="100" rows="10">
+
+    <p>
+      <label for="metadata">Metadata:</label>
+      <textarea id="metadata" cols="90" rows="10">
+{
+  farm: "La Haute Borne (Engie)",
+  turbine: "R80711",
+  model: "Senvion MM82",
+  nominal_power: 2050
+}
+      </textarea>
+    </p>
+    <p>
+      <label for="scada">Scada:</label>
+      <textarea id="scada" cols="90" rows="10">
 timestamp,wind_speed,wind_direction,air_temperature,nacelle_direction,active_power,pitch_angle
 2013-01-01 00:00:00+00:00,9.4799995,174.13,5.8000002,177.89999,1303.77,-0.99000001
 2013-01-01 00:10:00+00:00,9.2399998,173.53,5.77,177.89999,1276.15,-1.0
@@ -156,6 +170,7 @@ timestamp,wind_speed,wind_direction,air_temperature,nacelle_direction,active_pow
 2013-01-01 23:40:00+00:00,6.6700001,226.98,2.9200001,233.87,571.51001,-1.0
 2013-01-01 23:50:00+00:00,6.6100001,225.0,3.0,233.87,560.56,-1.0
       </textarea>
+    </p>
   </div>
 
   <script type="module" src="/src/main.ts"></script>
