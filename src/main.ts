@@ -491,5 +491,50 @@ class Engine {
   }
 }
 
+interface ScadaRecord {
+  timestamp: Date
+  wind_speed: number
+  wind_direction: number
+  air_temperature: number
+  nacelle_direction: number
+  active_power: number
+  pitch_angle: number
+}
+
+
+interface Metadata {
+  farm: string | null
+  turbine: string | null
+  turbine_model: string | null
+  nominal_power: number | null
+}
+
+function parse_scada(scada: string): ScadaRecord[] {
+  let lines = scada.split("\n")
+
+  // Parse headers
+  let lut: Record<string, number> = {}
+  lines[0].split(",").forEach((value, i) => {
+    lut[value] = i
+  })
+  lines.splice(0, 1)
+
+  return lines.map((line) => {
+    let values = line.split(",")
+    return {
+      timestamp: new Date(values[lut["timestamp"]]),
+      wind_speed: Number.parseFloat(values[lut["wind_speed"]]),
+      wind_direction: Number.parseFloat(values[lut["wind_direction"]]),
+      air_temperature: Number.parseFloat(values[lut["air_temperature"]]),
+      nacelle_direction: Number.parseFloat(values[lut["nacelle_direction"]]),
+      active_power: Number.parseFloat(values[lut["active_power"]]),
+      pitch_angle: Number.parseFloat(values[lut["pitch_angle"]]),
+    }
+  })
+}
+
+
+let records = parse_scada((document.getElementById("scada")! as HTMLTextAreaElement).value)
+
 const ui = new Engine()
 ui.request_frame()
