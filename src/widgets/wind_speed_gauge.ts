@@ -6,6 +6,7 @@ export class WindSpeedGauge extends TitledWidget {
     constructor() {
         let gauge = new Gauge(0, 25)
         gauge.unit = "m.s⁻¹"
+        gauge.precision = 1
         super("Wind speed", gauge)
     }
 
