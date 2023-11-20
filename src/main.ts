@@ -279,7 +279,7 @@ class ActivePowerGauge extends Gauge {
 
 class WindSpeedGauge extends Gauge {
   constructor(grid_rect: Rect) {
-    super("Wnd speed", 0, 30, grid_rect)
+    super("Wind speed", 0, 30, grid_rect)
     this.unit = "ms⁻¹"
   }
 
