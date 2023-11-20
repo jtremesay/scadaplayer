@@ -13,8 +13,8 @@ export class TitledWidget extends Widget {
         this.widget = widget
     }
 
-    update(metadata: Metadata, records: ScadaRecord[], i: number): void {
-        this.widget.update(metadata, records, i)
+    update(metadata: Metadata, records: ScadaRecord[], i: number, record: ScadaRecord): void {
+        this.widget.update(metadata, records, i, record)
     }
 
     draw(ctx: CanvasRenderingContext2D, size: Size): void {

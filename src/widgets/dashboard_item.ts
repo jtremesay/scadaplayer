@@ -16,8 +16,8 @@ export class DashboardItem extends Widget {
         this.widget = widget
     }
 
-    update(metadata: Metadata, records: ScadaRecord[], i: number) {
-        this.widget.update(metadata, records, i)
+    update(metadata: Metadata, records: ScadaRecord[], i: number, record: ScadaRecord) {
+        this.widget.update(metadata, records, i, record)
     }
 
 

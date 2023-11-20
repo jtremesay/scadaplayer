@@ -11,7 +11,7 @@ export class AirTemperatureGauge extends TitledWidget {
         super("Air temperature", gauge)
     }
 
-    update(_metadata: Metadata, records: ScadaRecord[], i: number): void {
-        (this.widget as Gauge).value = records[i].air_temperature
+    update(_metadata: Metadata, _records: ScadaRecord[], _i: number, record: ScadaRecord): void {
+        (this.widget as Gauge).value = record.air_temperature
     }
 }

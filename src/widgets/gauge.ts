@@ -1,4 +1,3 @@
-import { Metadata, ScadaRecord } from "../models"
 import { Point } from "./point"
 import { Size } from "./size"
 import { Widget } from "./widget"
@@ -26,10 +25,6 @@ export class Gauge extends Widget {
         this.phase = (2 * Math.PI - this.theta) / 2 + Math.PI / 2
         this.unit = ""
         this.precision = 0
-    }
-
-    update(_metadata: Metadata, records: ScadaRecord[], i: number): void {
-        this.value = records[i].air_temperature
     }
 
     draw(ctx: CanvasRenderingContext2D, size: Size): void {

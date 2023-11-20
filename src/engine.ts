@@ -1,4 +1,5 @@
 import { CANVAS_SIZE } from "./config"
+import { lerp } from "./maths"
 import { Metadata, ScadaRecord } from "./models"
 import { ActivePowerGauge } from "./widgets/active_power_gauge"
 import { AirTemperatureGauge } from "./widgets/air_temperature_gauge"
@@ -36,8 +37,28 @@ export class Engine {
     }
 
     render(time: DOMHighResTimeStamp) {
-        if (this.records.length > 0) {
-            this.dashboard.update(this.metadata, this.records, Math.floor(time / 1000) % this.records.length)
+        time /= 1000
+        let i = Math.floor(time) % this.records.length
+        let record: ScadaRecord | null = null;
+        if (this.records.length >= 2) {
+            let curr = this.records[i]
+            let next = this.records[i + 1]
+            record = {
+                timestamp: curr.timestamp,
+                wind_speed: lerp(time, i, i + 1, curr.wind_speed, next.wind_speed),
+                wind_direction: lerp(time, i, i + 1, curr.wind_direction, next.wind_direction),
+                air_temperature: lerp(time, i, i + 1, curr.air_temperature, next.air_temperature),
+                nacelle_direction: lerp(time, i, i + 1, curr.nacelle_direction, next.nacelle_direction),
+                active_power: lerp(time, i, i + 1, curr.active_power, next.active_power),
+                pitch_angle: lerp(time, i, i + 1, curr.pitch_angle, next.pitch_angle),
+            }
+
+        } else if (this.records.length > 0) {
+            record = this.records[i]
+        }
+
+        if (record) {
+            this.dashboard.update(this.metadata, this.records, i, record)
         }
 
         this.dashboard.draw(this.ctx, CANVAS_SIZE)

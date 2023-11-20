@@ -22,9 +22,9 @@ export class Dashboard extends Widget {
         return item
     }
 
-    update(metadata: Metadata, records: ScadaRecord[], i: number) {
+    update(metadata: Metadata, records: ScadaRecord[], i: number, record: ScadaRecord) {
         this.items.forEach((item) => {
-            item.update(metadata, records, i)
+            item.update(metadata, records, i, record)
         })
     }
 

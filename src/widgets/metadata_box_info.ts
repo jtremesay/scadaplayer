@@ -9,7 +9,7 @@ export class MetadataBoxInfo extends TitledWidget {
         super("Metadata", box_info)
     }
 
-    update(metadata: Metadata, _records: ScadaRecord[], _i: number): void {
+    update(metadata: Metadata, _records: ScadaRecord[], _i: number, _record: ScadaRecord): void {
         let box_info = this.widget as BoxInfo
         box_info.values = [
             metadata.farm ?? "N/A",

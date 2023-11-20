@@ -5,7 +5,7 @@ export class Widget {
     constructor() {
     }
 
-    update(_metadata: Metadata, _records: ScadaRecord[], _i: number) { }
+    update(_metadata: Metadata, _records: ScadaRecord[], _i: number, _record: ScadaRecord) { }
 
     draw(ctx: CanvasRenderingContext2D, size: Size) {
         // Debug background

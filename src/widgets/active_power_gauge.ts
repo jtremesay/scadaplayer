@@ -11,7 +11,7 @@ export class ActivePowerGauge extends TitledWidget {
         gauge.long_tick_step = 500
     }
 
-    update(_metadata: Metadata, records: ScadaRecord[], i: number): void {
-        (this.widget as Gauge).value = records[i].active_power
+    update(_metadata: Metadata, _records: ScadaRecord[], _i: number, record: ScadaRecord): void {
+        (this.widget as Gauge).value = record.active_power
     }
 }

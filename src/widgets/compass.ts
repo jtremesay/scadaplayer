@@ -13,8 +13,7 @@ export class Compass extends Widget {
         this.wind_direction = 0
     }
 
-    update(_metadata: Metadata, records: ScadaRecord[], i: number): void {
-        let record = records[i]
+    update(_metadata: Metadata, _records: ScadaRecord[], _i: number, record: ScadaRecord): void {
         this.nacelle_direction = record.nacelle_direction
         this.wind_direction = record.wind_direction
     }

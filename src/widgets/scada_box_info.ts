@@ -9,14 +9,14 @@ export class ScadaBoxInfo extends TitledWidget {
         super("Scada info", box_info)
     }
 
-    update(_metadata: Metadata, records: ScadaRecord[], i: number): void {
+    update(_metadata: Metadata, records: ScadaRecord[], i: number, record: ScadaRecord): void {
         let box_info = this.widget as BoxInfo
         box_info.values = [
             records[0].timestamp.toISOString(),
             records[records.length - 1].timestamp.toISOString(),
             records.length.toFixed(),
             (i + 1).toFixed(),
-            records[i].timestamp.toISOString()
+            record.timestamp.toISOString()
         ]
     }
 }
