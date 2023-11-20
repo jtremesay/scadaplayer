@@ -38,19 +38,21 @@ export class Engine {
 
     render(time: DOMHighResTimeStamp) {
         time /= 1000
-        let i = Math.floor(time) % this.records.length
+        let a = time % this.records.length
+        let i = Math.floor(a)
         let record: ScadaRecord | null = null;
         if (this.records.length >= 2) {
             let curr = this.records[i]
             let next = this.records[(i + 1) % this.records.length]
+            let j = a - i
             record = {
                 timestamp: curr.timestamp,
-                wind_speed: lerp(time, i, i + 1, curr.wind_speed, next.wind_speed),
-                wind_direction: lerp(time, i, i + 1, curr.wind_direction, next.wind_direction),
-                air_temperature: lerp(time, i, i + 1, curr.air_temperature, next.air_temperature),
-                nacelle_direction: lerp(time, i, i + 1, curr.nacelle_direction, next.nacelle_direction),
-                active_power: lerp(time, i, i + 1, curr.active_power, next.active_power),
-                pitch_angle: lerp(time, i, i + 1, curr.pitch_angle, next.pitch_angle),
+                wind_speed: lerp(j, 0, 1, curr.wind_speed, next.wind_speed),
+                wind_direction: lerp(j, 0, 1, curr.wind_direction, next.wind_direction),
+                air_temperature: lerp(j, 0, 1, curr.air_temperature, next.air_temperature),
+                nacelle_direction: lerp(j, 0, 1, curr.nacelle_direction, next.nacelle_direction),
+                active_power: lerp(j, 0, 1, curr.active_power, next.active_power),
+                pitch_angle: lerp(j, 0, 1, curr.pitch_angle, next.pitch_angle),
             }
 
         } else if (this.records.length > 0) {
