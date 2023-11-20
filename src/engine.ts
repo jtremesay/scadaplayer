@@ -42,7 +42,7 @@ export class Engine {
         let record: ScadaRecord | null = null;
         if (this.records.length >= 2) {
             let curr = this.records[i]
-            let next = this.records[i + 1]
+            let next = this.records[(i + 1) % this.records.length]
             record = {
                 timestamp: curr.timestamp,
                 wind_speed: lerp(time, i, i + 1, curr.wind_speed, next.wind_speed),
