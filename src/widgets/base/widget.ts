@@ -1,11 +1,12 @@
-import { Metadata, ScadaRecord } from "../models"
+import { Metadata } from "../../models"
+import { Simulation } from "../../simulation"
 import { Size } from "./size"
 
 export class Widget {
     constructor() {
     }
 
-    update(_metadata: Metadata, _records: ScadaRecord[], _i: number, _record: ScadaRecord) { }
+    update(_metadata: Metadata, _simulation: Simulation) { }
 
     draw(ctx: CanvasRenderingContext2D, size: Size) {
         // Debug background

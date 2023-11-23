@@ -1,27 +1,29 @@
 import { CANVAS_SIZE } from "./config"
-import { lerp } from "./maths"
 import { Metadata, ScadaRecord } from "./models"
-import { ActivePowerGauge } from "./widgets/active_power_gauge"
-import { AirTemperatureGauge } from "./widgets/air_temperature_gauge"
-import { Compass } from "./widgets/compass"
-import { Dashboard } from "./widgets/dashboard"
-import { MetadataBoxInfo } from "./widgets/metadata_box_info"
-import { PitchAngleGauge } from "./widgets/pitch_angle_gauge"
-import { Point } from "./widgets/point"
-import { ScadaBoxInfo } from "./widgets/scada_box_info"
-import { Size } from "./widgets/size"
-import { WindSpeedGauge } from "./widgets/wind_speed_gauge"
+import { Simulation } from "./simulation"
+import { ActivePowerGauge } from "./widgets/scadaplayer/active_power_gauge"
+import { AirTemperatureGauge } from "./widgets/scadaplayer/air_temperature_gauge"
+import { Compass } from "./widgets/base/compass"
+import { Dashboard } from "./widgets/base/dashboard"
+import { MetadataBoxInfo } from "./widgets/scadaplayer/metadata_box_info"
+import { PitchAngleGauge } from "./widgets/scadaplayer/pitch_angle_gauge"
+import { Point } from "./widgets/base/point"
+import { ScadaBoxInfo } from "./widgets/scadaplayer/scada_box_info"
+import { Size } from "./widgets/base/size"
+import { WindSpeedGauge } from "./widgets/scadaplayer/wind_speed_gauge"
 
 export class Engine {
     metadata: Metadata
-    records: ScadaRecord[]
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
     dashboard: Dashboard
+    simulation: Simulation
+    last_time: number | null
 
     constructor(metadata: Metadata, records: ScadaRecord[]) {
         this.metadata = metadata
-        this.records = records
+        this.simulation = new Simulation(records)
+        this.last_time = null
         this.canvas = document.getElementById("canvas")! as HTMLCanvasElement
         this.canvas.width = CANVAS_SIZE.width
         this.canvas.height = CANVAS_SIZE.height
@@ -38,31 +40,14 @@ export class Engine {
 
     render(time: DOMHighResTimeStamp) {
         time /= 1000
-        let a = time % this.records.length
-        let i = Math.floor(a)
-        let record: ScadaRecord | null = null;
-        if (this.records.length >= 2) {
-            let curr = this.records[i]
-            let next = this.records[(i + 1) % this.records.length]
-            let j = a - i
-            record = {
-                timestamp: curr.timestamp,
-                wind_speed: lerp(j, 0, 1, curr.wind_speed, next.wind_speed),
-                wind_direction: lerp(j, 0, 1, curr.wind_direction, next.wind_direction),
-                air_temperature: lerp(j, 0, 1, curr.air_temperature, next.air_temperature),
-                nacelle_direction: lerp(j, 0, 1, curr.nacelle_direction, next.nacelle_direction),
-                active_power: lerp(j, 0, 1, curr.active_power, next.active_power),
-                pitch_angle: lerp(j, 0, 1, curr.pitch_angle, next.pitch_angle),
-            }
-
-        } else if (this.records.length > 0) {
-            record = this.records[i]
+        if (this.last_time == null) {
+            this.last_time = time - 1 / 60
         }
+        let dt = time - this.last_time
+        this.last_time = time
 
-        if (record) {
-            this.dashboard.update(this.metadata, this.records, i, record)
-        }
-
+        this.simulation.update(dt)
+        this.dashboard.update(this.metadata, this.simulation)
         this.dashboard.draw(this.ctx, CANVAS_SIZE)
 
         this.request_frame()

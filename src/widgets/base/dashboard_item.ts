@@ -1,5 +1,6 @@
-import { ITEM_SIZE } from "../config"
-import { Metadata, ScadaRecord } from "../models"
+import { ITEM_SIZE } from "../../config"
+import { Metadata } from "../../models"
+import { Simulation } from "../../simulation"
 import { Point } from "./point"
 import { Size } from "./size"
 import { Widget } from "./widget"
@@ -16,8 +17,8 @@ export class DashboardItem extends Widget {
         this.widget = widget
     }
 
-    update(metadata: Metadata, records: ScadaRecord[], i: number, record: ScadaRecord) {
-        this.widget.update(metadata, records, i, record)
+    update(metadata: Metadata, simulation: Simulation) {
+        this.widget.update(metadata, simulation)
     }
 
 

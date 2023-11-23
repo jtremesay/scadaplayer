@@ -1,5 +1,6 @@
-import { TITLE_HEIGHT } from "../config";
-import { Metadata, ScadaRecord } from "../models";
+import { TITLE_HEIGHT } from "../../config";
+import { Metadata } from "../../models";
+import { Simulation } from "../../simulation";
 import { Size } from "./size";
 import { Widget } from "./widget";
 
@@ -13,8 +14,8 @@ export class TitledWidget extends Widget {
         this.widget = widget
     }
 
-    update(metadata: Metadata, records: ScadaRecord[], i: number, record: ScadaRecord): void {
-        this.widget.update(metadata, records, i, record)
+    update(metadata: Metadata, simulation: Simulation): void {
+        this.widget.update(metadata, simulation)
     }
 
     draw(ctx: CanvasRenderingContext2D, size: Size): void {

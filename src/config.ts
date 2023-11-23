@@ -1,4 +1,4 @@
-import { Size } from "./widgets/size"
+import { Size } from "./widgets/base/size"
 
 export const ITEM_SIZE = new Size(160, 135)
 export const GRID_SIZE = new Size(6, 6)

@@ -1,6 +1,7 @@
-import { Metadata, ScadaRecord } from "../models";
-import { BoxInfo } from "./box_info";
-import { TitledWidget } from "./titled_widget";
+import { Metadata } from "../../models";
+import { Simulation } from "../../simulation";
+import { BoxInfo } from "../base/box_info";
+import { TitledWidget } from "../base/titled_widget";
 
 export class MetadataBoxInfo extends TitledWidget {
     constructor() {
@@ -9,7 +10,7 @@ export class MetadataBoxInfo extends TitledWidget {
         super("Metadata", box_info)
     }
 
-    update(metadata: Metadata, _records: ScadaRecord[], _i: number, _record: ScadaRecord): void {
+    update(metadata: Metadata, _simulation: Simulation): void {
         let box_info = this.widget as BoxInfo
         box_info.values = [
             metadata.farm ?? "N/A",

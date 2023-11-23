@@ -2,8 +2,9 @@ import { Widget } from "./widget"
 import { DashboardItem } from "./dashboard_item"
 import { Size } from "./size"
 import { Point } from "./point"
-import { Metadata, ScadaRecord } from "../models"
-import { GRID_SIZE, ITEM_SIZE } from "../config"
+import { Metadata } from "../../models"
+import { GRID_SIZE, ITEM_SIZE } from "../../config"
+import { Simulation } from "../../simulation"
 
 export class Dashboard extends Widget {
     items: DashboardItem[]
@@ -22,9 +23,9 @@ export class Dashboard extends Widget {
         return item
     }
 
-    update(metadata: Metadata, records: ScadaRecord[], i: number, record: ScadaRecord) {
+    update(metadata: Metadata, simulation: Simulation) {
         this.items.forEach((item) => {
-            item.update(metadata, records, i, record)
+            item.update(metadata, simulation)
         })
     }
 

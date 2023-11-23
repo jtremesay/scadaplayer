@@ -1,4 +1,5 @@
-import { Metadata, ScadaRecord } from "../models";
+import { Metadata } from "../../models";
+import { Simulation } from "../../simulation";
 import { Point } from "./point";
 import { Size } from "./size";
 import { Widget } from "./widget";
@@ -13,9 +14,9 @@ export class Compass extends Widget {
         this.wind_direction = 0
     }
 
-    update(_metadata: Metadata, _records: ScadaRecord[], _i: number, record: ScadaRecord): void {
-        this.nacelle_direction = record.nacelle_direction
-        this.wind_direction = record.wind_direction
+    update(_metadata: Metadata, simulation: Simulation): void {
+        this.nacelle_direction = simulation.record!.nacelle_direction
+        this.wind_direction = simulation.record!.wind_direction
     }
 
     draw(ctx: CanvasRenderingContext2D, size: Size): void {
